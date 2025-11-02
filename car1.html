@@ -3,56 +3,56 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Manual Car Simulator — Unlimited Road (Three.js r120)</title>
+<title>Manual Car Simulator — 126px Compact (Unlimited Road)</title>
 <style>
   :root{
-    --bg:#0b1020; --card:#0f162d; --ink:#e7eefc; --muted:#95a3c7; --accent:#6ee7b7; --warn:#f87171; --brand:#60a5fa;
-    --line:#1b2445; --chip:#17203d;
-    --wheelSize:126px; /* updated size */
+    --bg:#0b1020; --ink:#e7eefc; --muted:#95a3c7; --accent:#6ee7b7; --warn:#f87171; --brand:#60a5fa; --line:#1b2445; --chip:#17203d;
+    --uSize:126px;
+    --wheelSize:126px;
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;overflow:hidden;-webkit-user-select:none;user-select:none}
   #app{position:fixed;inset:0;display:grid;grid-template-rows:1fr auto}
   canvas{display:block}
 
-  .hud{position:fixed;left:8px;top:8px;display:flex;gap:8px;flex-wrap:wrap;z-index:10}
-  .panel{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(0,0,0,.2));border:1px solid var(--line);border-radius:12px;padding:8px 10px;backdrop-filter:blur(6px);box-shadow:0 8px 20px rgba(0,0,0,.25)}
-  .stat h4{margin:0 0 4px 0;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.08em;text-transform:uppercase}
-  .stat .v{font-variant-numeric:tabular-nums;font-size:18px;font-weight:700}
+  .hud{position:fixed;left:6px;top:6px;display:flex;gap:6px;flex-wrap:wrap;z-index:10}
+  .panel{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(0,0,0,.2));border:1px solid var(--line);border-radius:10px;padding:6px 8px;backdrop-filter:blur(6px);box-shadow:0 6px 14px rgba(0,0,0,.25)}
+  .stat h4{margin:0 0 2px 0;font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+  .stat .v{font-variant-numeric:tabular-nums;font-size:16px;font-weight:700}
 
-  /* === Compact control layout (512px container) === */
-  .dock{position:fixed;left:0;right:0;bottom:0;padding:10px 12px;display:flex;justify-content:center;z-index:9}
+  .dock{position:fixed;left:0;right:0;bottom:0;padding:8px 10px;display:flex;justify-content:center;z-index:9}
   .controlPad{
-    width:512px; max-width:100%;
+    width:calc(var(--uSize) * 2.5); max-width:100%;
     background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(0,0,0,.18));
-    border:1px solid var(--line); border-radius:16px; padding:10px;
+    border:1px solid var(--line); border-radius:14px; padding:8px;
     box-shadow:0 10px 30px rgba(0,0,0,.25);
-    display:grid; grid-template-columns: 1fr 1fr; gap:10px; align-items:center;
+    display:grid; grid-template-columns: 1fr 1fr; gap:8px; align-items:center;
   }
   .wheelBox{display:flex;justify-content:center;align-items:center;}
-  .wheel{width:var(--wheelSize);height:var(--wheelSize);border-radius:50%;border:8px solid var(--brand);position:relative;background:radial-gradient(ellipse at center, rgba(255,255,255,.06), rgba(0,0,0,.2));-webkit-user-select:none;user-select:none;transform:rotate(0deg)}
-  .wheel:after{content:"";position:absolute;left:50%;top:50%;width:12px;height:12px;border-radius:50%;transform:translate(-50%,-50%);background:var(--ink)}
+  .wheel{width:var(--wheelSize);height:var(--wheelSize);border-radius:50%;border:6px solid var(--brand);position:relative;background:radial-gradient(ellipse at center, rgba(255,255,255,.06), rgba(0,0,0,.2));-webkit-user-select:none;user-select:none;transform:rotate(0deg)}
+  .wheel:after{content:"";position:absolute;left:50%;top:50%;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);background:var(--ink)}
   .wheel .spoke{position:absolute;left:50%;top:50%;width:3px;height:36%;background:var(--ink);transform-origin:50% 100%;border-radius:2px;opacity:.9}
   .wheel .spoke:nth-child(1){transform:translate(-50%,-100%) rotate(0deg)}
   .wheel .spoke:nth-child(2){transform:translate(-50%,-100%) rotate(120deg)}
   .wheel .spoke:nth-child(3){transform:translate(-50%,-100%) rotate(240deg)}
 
-  .controlsRight{display:grid;grid-template-rows:auto auto;gap:8px}
-  .shifter{position:relative;width:100%;height:160px;margin:0 auto;-webkit-user-select:none;user-select:none}
-  .gate{position:absolute;left:8px;right:8px;top:8px;bottom:8px;border-radius:14px;border:1px dashed var(--line);display:grid;grid-template-columns:56px repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:14px;padding:14px}
-  .slot{position:absolute;width:42px;height:42px;border-radius:10px;border:1px solid var(--line);background:var(--chip);display:grid;place-items:center;font-weight:800;font-size:14px}
+  .controlsRight{display:grid;grid-template-rows:auto auto;gap:6px}
+  .shifter{position:relative;width:100%;height:var(--uSize);margin:0 auto;-webkit-user-select:none;user-select:none}
+  .gate{position:absolute;left:6px;right:6px;top:6px;bottom:6px;border-radius:12px;border:1px dashed var(--line);display:grid;grid-template-columns:56px repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:10px;padding:10px}
+  .slot{position:absolute;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--chip);display:grid;place-items:center;font-weight:800;font-size:13px}
   .slot.on{outline:2px solid var(--accent)} .slot.r{outline:2px solid var(--warn)}
-  .knob{position:absolute;width:50px;height:50px;border-radius:50%;background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.3), rgba(0,0,0,.2));border:2px solid rgba(255,255,255,.15);box-shadow:0 6px 18px rgba(0,0,0,.45);display:grid;place-items:center;font-weight:900;font-size:14px}
+  .knob{position:absolute;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.3), rgba(0,0,0,.2));border:2px solid rgba(255,255,255,.15);box-shadow:0 6px 18px rgba(0,0,0,.45);display:grid;place-items:center;font-weight:900;font-size:13px}
 
-  .pRow{display:flex;gap:8px;justify-content:center}
-  .pBtn{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--chip);color:var(--ink);font-weight:900;cursor:pointer;-webkit-user-select:none;user-select:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),0 6px 10px rgba(0,0,0,.25); font-size:14px}
+  .pRow{display:flex;gap:6px;justify-content:center}
+  .pBtn{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--chip);color:var(--ink);font-weight:900;cursor:pointer;-webkit-user-select:none;user-select:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),0 6px 10px rgba(0,0,0,.25); font-size:13px}
   .pBtn[data-pressed="1"]{outline:2px solid var(--accent);background:rgba(110,231,183,.18)}
   .pBtn.brake[data-pressed="1"]{outline:2px solid var(--warn);background:rgba(248,113,113,.12)}
 
-  @media (max-width:560px){ :root{ --wheelSize:126px; } } /* keep 126px even on small screens */
+  @media (max-width:560px){
+    :root{ --uSize:126px; --wheelSize:126px; }
+  }
 </style>
 
-<!-- Polyfills for legacy Android WebView -->
 <script>
 (function() {
   var lastTime = 0;
@@ -81,12 +81,10 @@
 
     <div class="hud">
       <div class="panel stat"><h4>Speed</h4><div class="v"><span id="spd">0.0</span> km/h</div></div>
-      <div class="panel stat"><h4>RPM</h4><div class="v"><span id="rpm">800</span> rpm</div><div style="font-size:12px;color:var(--muted)">Gear: <b id="gear">N</b> • Clutch: <b id="clutchPct">0%</b></div></div>
+      <div class="panel stat"><h4>RPM</h4><div class="v"><span id="rpm">800</span> rpm</div><div style="font-size:11px;color:var(--muted)">Gear: <b id="gear">N</b> • Clutch: <b id="clutchPct">0%</b></div></div>
       <div class="panel stat"><h4>Steer</h4><div class="v"><span id="steer">0</span>°</div></div>
-      <div class="panel stat"><h4>Score</h4><div class="v"><span id="score">0</span></div></div>
     </div>
 
-    <!-- 512px control layout -->
     <div class="dock">
       <div class="controlPad">
         <div class="wheelBox">
@@ -109,7 +107,6 @@
     </div>
   </div>
 
-  <!-- Three.js r120 -->
   <script src="https://unpkg.com/three@0.120.0/build/three.min.js"></script>
   <script>
   var P = {
@@ -125,7 +122,6 @@
   var S = {speed:0, heading:0, steer:0, steerDeg:0, throttle:0, braking:0, clutch:0, gear:'N', rpm:P.idle, pos:new THREE.Vector3(0,0,0)};
 
   var elSpd = document.getElementById('spd'), elRpm = document.getElementById('rpm'), elGear = document.getElementById('gear'), elSteer = document.getElementById('steer'), elCl = document.getElementById('clutchPct');
-  var elScore = document.getElementById('score');
 
   var pGas=document.getElementById('pGas'), pBrake=document.getElementById('pBrake'), pClutch=document.getElementById('pClutch');
   function hold(el,on,off){
@@ -141,10 +137,9 @@
   hold(pBrake,function(){S.braking =1;}, function(){S.braking =0;});
   pClutch.addEventListener('click', function(){ var on=pClutch.getAttribute('data-pressed')==='0'; pClutch.setAttribute('data-pressed', on?'1':'0'); S.clutch=on?1:0; elCl.textContent=Math.round(S.clutch*100)+'%'; }, false);
 
-  // Steering wheel (no DOMMatrix)
+  // Steering
   var wheel = document.getElementById('wheel');
   var dragging=false, startAng=0, startRot=0, visualDeg=0;
-
   function setWheelVisual(deg){
     if(deg>180) deg=180; if(deg<-180) deg=-180;
     visualDeg = deg;
@@ -169,14 +164,12 @@
     setWheelVisual(startRot + d);
   }
   function pu(){ dragging=false; }
-
   wheel.addEventListener('mousedown', function(e){ e.preventDefault(); pd(e.clientX,e.clientY); }, false);
   window.addEventListener('mousemove', function(e){ pm(e.clientX,e.clientY); }, false);
   window.addEventListener('mouseup', pu, false);
   wheel.addEventListener('touchstart', function(e){ var t=e.changedTouches[0]; pd(t.clientX,t.clientY); }, false);
   window.addEventListener('touchmove', function(e){ var t=e.changedTouches[0]; pm(t.clientX,t.clientY); }, false);
   window.addEventListener('touchend', pu, false);
-
   function autoCenterSteer(dt){
     if(dragging) return;
     var sign = visualDeg>0?1:-1;
@@ -185,10 +178,10 @@
     else { setWheelVisual(visualDeg - sign*step); }
   }
 
-  // Shifter
+  // Shifter R,1..6
   var gate=document.getElementById('gate'), shifter=document.getElementById('shifter'), slots={}, layout=[{g:'R',c:0,r:0},{g:'1',c:1,r:0},{g:'2',c:1,r:1},{g:'3',c:2,r:0},{g:'4',c:2,r:1},{g:'5',c:3,r:0},{g:'6',c:3,r:1}];
   function buildSlots(){
-    var rect = gate.getBoundingClientRect(), pad=14, gw=rect.width-pad*2, gh=rect.height-pad*2;
+    var rect = gate.getBoundingClientRect(), pad=10, gw=rect.width-pad*2, gh=rect.height-pad*2;
     var colX=[pad+28, pad+gw*(1/6), pad+gw*(3/6), pad+gw*(5/6)];
     var rowY=[pad+gh*(1/4), pad+gh*(3/4)];
     var exist = gate.querySelectorAll('.slot');
@@ -200,10 +193,10 @@
       el.className='slot'+(it.g==='R'?' r':'');
       el.textContent=it.g;
       gate.appendChild(el);
-      var x=colX[it.c]-21, y=rowY[it.r]-21;
+      var x=colX[it.c]-19, y=rowY[it.r]-19;
       el.style.left=x+'px'; el.style.top=y+'px';
-      el.setAttribute('data-cx', (x+21));
-      el.setAttribute('data-cy', (y+21));
+      el.setAttribute('data-cx', (x+19));
+      el.setAttribute('data-cy', (y+19));
       slots[it.g]=el;
     }
   }
@@ -211,11 +204,11 @@
   function setKnobTo(gear){
     if(gear && slots[gear]){
       var cx=+slots[gear].getAttribute('data-cx'), cy=+slots[gear].getAttribute('data-cy');
-      knob.style.left=(cx-25)+'px'; knob.style.top=(cy-25)+'px'; knob.textContent=gear;
+      knob.style.left=(cx-23)+'px'; knob.style.top=(cy-23)+'px'; knob.textContent=gear;
       var all = gate.querySelectorAll('.slot'); for(var i=0;i<all.length;i++){ all[i].classList.remove('on'); }
       slots[gear].classList.add('on');
     } else {
-      var r=gate.getBoundingClientRect(); knob.style.left=(r.width/2-25)+'px'; knob.style.top=(r.height/2-25)+'px'; knob.textContent='N';
+      var r=gate.getBoundingClientRect(); knob.style.left=(r.width/2-23)+'px'; knob.style.top=(r.height/2-23)+'px'; knob.textContent='N';
       var all2 = gate.querySelectorAll('.slot'); for(var j=0;j<all2.length;j++){ all2[j].classList.remove('on'); }
     }
   }
@@ -226,21 +219,21 @@
       var d=Math.hypot ? Math.hypot(cx-x,cy-y) : Math.sqrt((cx-x)*(cx-x)+(cy-y)*(cy-y));
       if(d<dmin){dmin=d; b=g;}
     }
-    return dmin<48?b:null;
+    return dmin<44?b:null;
   }
   function flash(){ knob.style.boxShadow='0 0 0 8px rgba(239,68,68,.5)'; setTimeout(function(){ knob.style.boxShadow=''; },150); }
   var draggingKnob=false, off=[0,0];
-  function kDown(x,y){ draggingKnob=true; var k=knob.getBoundingClientRect(); off=[x-k.left-25, y-k.top-25]; }
+  function kDown(x,y){ draggingKnob=true; var k=knob.getBoundingClientRect(); off=[x-k.left-23, y-k.top-23]; }
   function kMove(x,y){
     if(!draggingKnob) return;
     var r=gate.getBoundingClientRect(); var X=x-r.left-off[0], Y=y-r.top-off[1];
-    if(X<0) X=0; if(Y<0) Y=0; if(X>r.width-50) X=r.width-50; if(Y>r.height-50) Y=r.height-50;
+    if(X<0) X=0; if(Y<0) Y=0; if(X>r.width-46) X=r.width-46; if(Y>r.height-46) Y=r.height-46;
     knob.style.left=X+'px'; knob.style.top=Y+'px';
   }
   function kUp(){
     if(!draggingKnob) return; draggingKnob=false;
     var r=gate.getBoundingClientRect(), k=knob.getBoundingClientRect();
-    var X=k.left-r.left+25, Y=k.top-r.top+25;
+    var X=k.left-r.left+23, Y=k.top-r.top+23;
     var g=nearest(X,Y);
     if(g){ if(tryShift(g)) setKnobTo(g); else {flash(); setKnobTo(S.gear==='N'?null:S.gear);} }
     else setKnobTo(S.gear==='N'?null:S.gear);
@@ -261,7 +254,7 @@
     return true;
   }
 
-  // ===== Three.js Scene (minimal environment to avoid flicker) =====
+  // Scene
   var viewport=document.getElementById('viewport');
   var canvas = document.createElement('canvas');
   canvas.addEventListener('webglcontextlost', function(e){ e.preventDefault(); }, false);
@@ -270,10 +263,11 @@
   var renderer=new THREE.WebGLRenderer({canvas:canvas, antialias:false, alpha:false, preserveDrawingBuffer:false});
   renderer.setPixelRatio(1);
   renderer.setSize(window.innerWidth,window.innerHeight);
+  renderer.setClearColor(0x0b1020, 1);
 
-  var scene=new THREE.Scene(); scene.background=new THREE.Color(0x0b1020);
-  var camera=new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.5, 20000); // farther just in case
-  camera.position.set(0,4,8);
+  var scene=new THREE.Scene();
+  var camera=new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.5, 20000);
+  camera.position.set(0,3.2,6.5);
   scene.add(new THREE.HemisphereLight(0xffffff,0x223355,0.9));
   var dir=new THREE.DirectionalLight(0xffffff,0.55); dir.position.set(3,6,2); dir.castShadow=false; scene.add(dir);
 
@@ -298,8 +292,7 @@
   }
 
   function buildRoadUnlimited(){
-    var halfW=P.roadW/2;
-    var L = 1000000; // 1,000,000 units long
+    var L = 1000000;
     var roadTexture = createRoadTexture();
     roadTexture.repeat.set(1, L / 10);
     var roadMat = new THREE.MeshStandardMaterial({map: roadTexture, roughness: 1.0, metalness: 0.0});
@@ -307,20 +300,19 @@
     road.rotation.x=-Math.PI/2;
     road.position.y = 0;
     env.add(road);
-    // NOTE: No edges, no base, no mountains — minimal to avoid flicker / overdraw
   }
-
   buildRoadUnlimited();
 
-  // ===== Car (simplified) =====
+  // Car (scaled visually smaller)
   var car=new THREE.Group(); scene.add(car);
+  car.scale.set(0.85,0.85,0.85);
   var bodyMat = new THREE.MeshStandardMaterial({color:0x60a5fa,metalness:.1,roughness:.7});
   var body=new THREE.Mesh(new THREE.BoxGeometry(2.0,.7,4.4), bodyMat);
-  body.position.y=.7/2+.4; car.add(body);
+  body.position.y=.7/2+.35; car.add(body);
   var roof=new THREE.Mesh(new THREE.BoxGeometry(1.6,.35,2.0), new THREE.MeshStandardMaterial({color:0x6aa9ff,metalness:.05,roughness:.25,transparent:true,opacity:.6}));
-  roof.position.set(0, body.position.y+.35, -0.2); car.add(roof);
+  roof.position.set(0, body.position.y+.3, -0.2); car.add(roof);
 
-  var wGeo=new THREE.CylinderGeometry(P.wheelR,P.wheelR,.24,14); wGeo.rotateZ(Math.PI/2);
+  var wGeo=new THREE.CylinderGeometry(P.wheelR,P.wheelR,.22,14); wGeo.rotateZ(Math.PI/2);
   var wMat=new THREE.MeshStandardMaterial({color:0x222831,roughness:.9});
   function mk(){ return new THREE.Mesh(wGeo,wMat); }
   var wFL=mk(); wFL.position.set(.95,P.wheelR, 1.6);
@@ -331,10 +323,7 @@
 
   function resetCar(){ S.speed=0; S.heading=0; S.pos.set(0,0,0); S.rpm=P.idle; S.gear='N'; S.clutch=0; }
 
-  // REMOVE apples to keep scene minimal
-  var apples = [];
-  var score = 0;
-
+  // Physics (no off-road reset)
   var FIXED_DT = 1/120;
   var acc = 0; var lastT = Date.now();
 
@@ -370,12 +359,10 @@
     var dir = new THREE.Vector3(Math.sin(S.heading),0,Math.cos(S.heading));
     S.pos.addScaledVector(dir, S.speed*dt);
 
-    // REMOVED: off-road reset
-    // (No clamping/reset when leaving road bounds)
-
+    // NO: off-road reset or clamping
+    // wheels spin & auto-center
     var spin=(S.speed/P.wheelR)*dt;
     wFL.rotation.x-=spin; wFR.rotation.x-=spin; wRL.rotation.x-=spin; wRR.rotation.x-=spin;
-
     autoCenterSteer(dt);
   }
 
@@ -387,10 +374,10 @@
     wFL.rotation.y = steerRadVisual; wFR.rotation.y = steerRadVisual;
     body.rotation.z = -S.steer * 0.05;
 
-    var back=new THREE.Vector3(Math.sin(car.rotation.y),0,Math.cos(car.rotation.y)).multiplyScalar(-5.5);
-    var camTarget=new THREE.Vector3(0,0,0).add(back).add(new THREE.Vector3(0,2.8,0));
-    camera.position.lerp(camTarget, 0.14);
-    camera.lookAt(new THREE.Vector3(0,.8,0));
+    var back=new THREE.Vector3(Math.sin(car.rotation.y),0,Math.cos(car.rotation.y)).multiplyScalar(-5.2);
+    var camTarget=new THREE.Vector3(0,0,0).add(back).add(new THREE.Vector3(0,2.6,0));
+    camera.position.lerp(camTarget, 0.16);
+    camera.lookAt(new THREE.Vector3(0,.75,0));
 
     elSpd.textContent = (Math.abs(S.speed)*3.6).toFixed(1);
     elRpm.textContent = Math.round(S.rpm);
@@ -409,7 +396,11 @@
   }
 
   (function boot(){
-    window.addEventListener('resize', function(){ renderer.setSize(window.innerWidth,window.innerHeight); camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); }, false);
+    window.addEventListener('resize', function(){
+      renderer.setSize(window.innerWidth,window.innerHeight);
+      camera.aspect=window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+    }, false);
     loop();
   })();
   </script>
