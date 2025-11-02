@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Manual Car Simulator (Legacy Compact • 512px Controls) – Three.js r120</title>
+<title>Manual Car Simulator — Unlimited Road (Three.js r120)</title>
 <style>
   :root{
     --bg:#0b1020; --card:#0f162d; --ink:#e7eefc; --muted:#95a3c7; --accent:#6ee7b7; --warn:#f87171; --brand:#60a5fa;
     --line:#1b2445; --chip:#17203d;
-    --wheelSize:120px;
+    --wheelSize:126px; /* updated size */
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;overflow:hidden;-webkit-user-select:none;user-select:none}
@@ -23,7 +23,7 @@
   /* === Compact control layout (512px container) === */
   .dock{position:fixed;left:0;right:0;bottom:0;padding:10px 12px;display:flex;justify-content:center;z-index:9}
   .controlPad{
-    width:512px; max-width:100%; 
+    width:512px; max-width:100%;
     background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(0,0,0,.18));
     border:1px solid var(--line); border-radius:16px; padding:10px;
     box-shadow:0 10px 30px rgba(0,0,0,.25);
@@ -49,12 +49,11 @@
   .pBtn[data-pressed="1"]{outline:2px solid var(--accent);background:rgba(110,231,183,.18)}
   .pBtn.brake[data-pressed="1"]{outline:2px solid var(--warn);background:rgba(248,113,113,.12)}
 
-  @media (max-width:560px){ :root{ --wheelSize:100px; } }
+  @media (max-width:560px){ :root{ --wheelSize:126px; } } /* keep 126px even on small screens */
 </style>
 
 <!-- Polyfills for legacy Android WebView -->
 <script>
-// requestAnimationFrame polyfill
 (function() {
   var lastTime = 0;
   var vendors = ['ms', 'moz', 'webkit', 'o'];
@@ -110,10 +109,9 @@
     </div>
   </div>
 
-  <!-- Use Three.js r120 (WebGL1-friendly) -->
+  <!-- Three.js r120 -->
   <script src="https://unpkg.com/three@0.120.0/build/three.min.js"></script>
   <script>
-  // ===== Performance dials for older phones =====
   var P = {
     maxSteerDeg: 33,
     idle: 800, maxRpm: 7000, red: 6800, inertia: .2,
@@ -143,7 +141,7 @@
   hold(pBrake,function(){S.braking =1;}, function(){S.braking =0;});
   pClutch.addEventListener('click', function(){ var on=pClutch.getAttribute('data-pressed')==='0'; pClutch.setAttribute('data-pressed', on?'1':'0'); S.clutch=on?1:0; elCl.textContent=Math.round(S.clutch*100)+'%'; }, false);
 
-  // ===== Steering Wheel (no DOMMatrix) =====
+  // Steering wheel (no DOMMatrix)
   var wheel = document.getElementById('wheel');
   var dragging=false, startAng=0, startRot=0, visualDeg=0;
 
@@ -187,7 +185,7 @@
     else { setWheelVisual(visualDeg - sign*step); }
   }
 
-  // ===== Shifter =====
+  // Shifter
   var gate=document.getElementById('gate'), shifter=document.getElementById('shifter'), slots={}, layout=[{g:'R',c:0,r:0},{g:'1',c:1,r:0},{g:'2',c:1,r:1},{g:'3',c:2,r:0},{g:'4',c:2,r:1},{g:'5',c:3,r:0},{g:'6',c:3,r:1}];
   function buildSlots(){
     var rect = gate.getBoundingClientRect(), pad=14, gw=rect.width-pad*2, gh=rect.height-pad*2;
@@ -263,26 +261,26 @@
     return true;
   }
 
-  // ===== Three.js Scene (WebGL1-friendly + perf) =====
+  // ===== Three.js Scene (minimal environment to avoid flicker) =====
   var viewport=document.getElementById('viewport');
   var canvas = document.createElement('canvas');
   canvas.addEventListener('webglcontextlost', function(e){ e.preventDefault(); }, false);
   viewport.appendChild(canvas);
 
   var renderer=new THREE.WebGLRenderer({canvas:canvas, antialias:false, alpha:false, preserveDrawingBuffer:false});
-  // Lower pixel ratio to avoid lag/black on weak GPUs
   renderer.setPixelRatio(1);
   renderer.setSize(window.innerWidth,window.innerHeight);
 
   var scene=new THREE.Scene(); scene.background=new THREE.Color(0x0b1020);
-  var camera=new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.5, 2500); camera.position.set(0,4,8);
+  var camera=new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.5, 20000); // farther just in case
+  camera.position.set(0,4,8);
   scene.add(new THREE.HemisphereLight(0xffffff,0x223355,0.9));
   var dir=new THREE.DirectionalLight(0xffffff,0.55); dir.position.set(3,6,2); dir.castShadow=false; scene.add(dir);
 
   var env=new THREE.Group(); scene.add(env);
 
   function createRoadTexture() {
-    var w = 64, h = 128; // smaller texture
+    var w = 64, h = 128;
     var c = document.createElement('canvas');
     c.width = w; c.height = h;
     var ctx = c.getContext('2d');
@@ -298,43 +296,23 @@
     tex.wrapT = THREE.RepeatWrapping;
     return tex;
   }
-  function buildRoadSingle(){
+
+  function buildRoadUnlimited(){
     var halfW=P.roadW/2;
-    var L = 20000; // shorter road
+    var L = 1000000; // 1,000,000 units long
     var roadTexture = createRoadTexture();
     roadTexture.repeat.set(1, L / 10);
     var roadMat = new THREE.MeshStandardMaterial({map: roadTexture, roughness: 1.0, metalness: 0.0});
-    var edgeMat=new THREE.MeshStandardMaterial({color:0x3a4a25,roughness:1});
-
     var road=new THREE.Mesh(new THREE.PlaneGeometry(P.roadW, L), roadMat);
-    road.rotation.x=-Math.PI/2; road.position.y = 0; env.add(road);
-
-    var left=new THREE.Mesh(new THREE.PlaneGeometry(120, L), edgeMat);
-    left.rotation.x=-Math.PI/2; left.position.x=-halfW-60; left.position.y = -0.01; env.add(left);
-
-    var right=new THREE.Mesh(new THREE.PlaneGeometry(120, L), edgeMat);
-    right.rotation.x=-Math.PI/2; right.position.x= halfW+60; right.position.y = -0.01; env.add(right);
-
-    var base=new THREE.Mesh(new THREE.PlaneGeometry(3000,3000), new THREE.MeshStandardMaterial({color:0x0f162d,roughness:1}));
-    base.rotation.x=-Math.PI/2; base.position.y = -0.02; env.add(base);
+    road.rotation.x=-Math.PI/2;
+    road.position.y = 0;
+    env.add(road);
+    // NOTE: No edges, no base, no mountains — minimal to avoid flicker / overdraw
   }
-  function addMountain(x,z,s,c){
-    var geo=new THREE.ConeGeometry(1,2,5); // fewer segments
-    var mat=new THREE.MeshStandardMaterial({color:c,roughness:.95,metalness:.05});
-    var m=new THREE.Mesh(geo,mat); m.scale.set(s*1.4,s*2.2,s*1.4); m.position.set(x,(s*2.2)/2,z); env.add(m);
-  }
-  function R(a,b){ return a + Math.random()*(b-a); }
-  function buildMountains(){
-    var halfW=P.roadW/2;
-    for(var k=0;k<30;k++){ // fewer mountains
-      var side=Math.random()<.5?-1:1;
-      var x=side*R(halfW+30,420), z=R(-1400,1400), s=R(3,12), col=Math.random()<.5?0x2b355c:0x223057;
-      addMountain(x,z,s,col);
-    }
-  }
-  buildRoadSingle(); buildMountains();
 
-  // ===== Car (simplified wheel segments) =====
+  buildRoadUnlimited();
+
+  // ===== Car (simplified) =====
   var car=new THREE.Group(); scene.add(car);
   var bodyMat = new THREE.MeshStandardMaterial({color:0x60a5fa,metalness:.1,roughness:.7});
   var body=new THREE.Mesh(new THREE.BoxGeometry(2.0,.7,4.4), bodyMat);
@@ -351,36 +329,11 @@
   var wRR=mk(); wRR.position.set(-.95,P.wheelR,-1.6);
   car.add(wFL,wFR,wRL,wRR);
 
-  function resetCar(){ S.speed=0; S.heading=0; S.pos.set(0,0,0); S.rpm=P.idle; S.gear='N'; S.clutch=0; pClutch.setAttribute('data-pressed','0'); setWheelVisual(0); }
+  function resetCar(){ S.speed=0; S.heading=0; S.pos.set(0,0,0); S.rpm=P.idle; S.gear='N'; S.clutch=0; }
 
-  // ===== Apples (reduced) =====
+  // REMOVE apples to keep scene minimal
   var apples = [];
   var score = 0;
-  function makeAppleMesh(){
-    var g = new THREE.SphereGeometry(0.16, 12, 12);
-    var m = new THREE.MeshStandardMaterial({color:0xd7263d, roughness:.6, metalness:.05});
-    var apple = new THREE.Mesh(g, m);
-    var stem = new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.12,6), new THREE.MeshStandardMaterial({color:0x2f6b2f, roughness:1}));
-    stem.position.set(0,0.22,0); apple.add(stem);
-    apple.castShadow=false; apple.receiveShadow=false;
-    return apple;
-  }
-  function spawnApples(n, zMin, zMax){
-    if(typeof n==='undefined') n=20;
-    if(typeof zMin==='undefined') zMin=20;
-    if(typeof zMax==='undefined') zMax=1800;
-    var half = P.roadW/2 - 0.6;
-    for(var i=0;i<n;i++){
-      var apple = makeAppleMesh();
-      var x = (Math.random()*2-1)*half;
-      var z = Math.random()*(zMax-zMin)+zMin;
-      apple.position.set(x, P.wheelR+0.05, z);
-      apple.userData = apple.userData || {};
-      apple.userData.worldPos = apple.position.clone();
-      env.add(apple); apples.push(apple);
-    }
-  }
-  spawnApples();
 
   var FIXED_DT = 1/120;
   var acc = 0; var lastT = Date.now();
@@ -417,29 +370,13 @@
     var dir = new THREE.Vector3(Math.sin(S.heading),0,Math.cos(S.heading));
     S.pos.addScaledVector(dir, S.speed*dt);
 
-    var margin = P.roadW/2 - 1.1;
-    if(margin > 0 && Math.abs(S.pos.x) > margin) resetCar();
+    // REMOVED: off-road reset
+    // (No clamping/reset when leaving road bounds)
 
     var spin=(S.speed/P.wheelR)*dt;
     wFL.rotation.x-=spin; wFR.rotation.x-=spin; wRL.rotation.x-=spin; wRR.rotation.x-=spin;
 
     autoCenterSteer(dt);
-  }
-
-  function checkApplePickup(){
-    var R = 0.5;
-    for(var i=0;i<apples.length;i++){
-      var a = apples[i];
-      if(!a.visible) continue;
-      var relX = a.userData.worldPos.x - S.pos.x;
-      var relZ = a.userData.worldPos.z - S.pos.z;
-      var d2 = relX*relX + relZ*relZ;
-      if(d2 < R*R){
-        a.visible = false;
-        score += 10;
-        elScore.textContent = score;
-      }
-    }
   }
 
   function renderFrame(){
@@ -467,7 +404,6 @@
     var dt = Math.min(0.1, (now - lastT)/1000); lastT = now;
     acc += dt;
     while(acc >= FIXED_DT){ physicsStep(FIXED_DT); acc -= FIXED_DT; }
-    checkApplePickup();
     renderFrame();
     requestAnimationFrame(loop);
   }
