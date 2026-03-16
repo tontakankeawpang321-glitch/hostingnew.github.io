@@ -7,12 +7,9 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
-
 <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
 
 <style>
-
 body{
 font-family:sans-serif;
 text-align:center;
@@ -53,7 +50,6 @@ margin-top:10px;
 #status{
 margin-top:10px;
 }
-
 </style>
 
 </head>
@@ -101,6 +97,8 @@ let statusText=document.getElementById("status")
 let startX,startY
 let crop=null
 
+// โหลด PDF
+
 document.getElementById("upload").addEventListener("change",async e=>{
 
 let file=e.target.files[0]
@@ -124,8 +122,9 @@ viewport:viewport
 
 })
 
-canvas.onmousedown=e=>{
+// วาด crop
 
+canvas.onmousedown=e=>{
 startX=e.offsetX
 startY=e.offsetY
 
@@ -133,7 +132,6 @@ cropBox.style.left=startX+"px"
 cropBox.style.top=startY+"px"
 cropBox.style.width="0px"
 cropBox.style.height="0px"
-
 }
 
 canvas.onmousemove=e=>{
@@ -161,6 +159,8 @@ startX=null
 
 }
 
+// Export PDF
+
 document.getElementById("export").onclick=async()=>{
 
 if(!crop){
@@ -171,7 +171,12 @@ return
 progress.style.width="0%"
 statusText.innerText="กำลังเริ่ม..."
 
-const srcPdf=await PDFLib.PDFDocument.load(pdfBytes)
+/* clone buffer แก้ detached error */
+
+const bufferCopy = pdfBytes.slice(0)
+
+const srcPdf=await PDFLib.PDFDocument.load(bufferCopy)
+
 const newPdf=await PDFLib.PDFDocument.create()
 
 const pages=srcPdf.getPages()
