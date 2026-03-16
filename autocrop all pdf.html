@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>PDF Crop ทุกหน้า</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+
+<script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+
+<style>
+
+body{
+font-family:sans-serif;
+text-align:center;
+background:#f4f4f4;
+}
+
+canvas{
+border:1px solid #000;
+cursor:crosshair;
+}
+
+#cropBox{
+position:absolute;
+border:2px dashed red;
+pointer-events:none;
+}
+
+#progressBar{
+width:420px;
+height:22px;
+border:1px solid #333;
+margin:auto;
+margin-top:15px;
+}
+
+#progress{
+width:0%;
+height:100%;
+background:#4caf50;
+}
+
+button{
+padding:10px 20px;
+font-size:16px;
+margin-top:10px;
+}
+
+#status{
+margin-top:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>PDF Crop ทุกหน้า</h2>
+
+<input type="file" id="upload" accept="application/pdf">
+
+<br><br>
+
+<div style="position:relative;display:inline-block;">
+<canvas id="canvas"></canvas>
+<div id="cropBox"></div>
+</div>
+
+<br>
+
+<button id="export">Export PDF</button>
+
+<div id="progressBar">
+<div id="progress"></div>
+</div>
+
+<div id="status">0%</div>
+
+<script>
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+let pdfBytes
+let pdfjsDoc
+let fileName="output.pdf"
+
+let canvas=document.getElementById("canvas")
+let ctx=canvas.getContext("2d")
+
+let cropBox=document.getElementById("cropBox")
+
+let progress=document.getElementById("progress")
+let statusText=document.getElementById("status")
+
+let startX,startY
+let crop=null
+
+document.getElementById("upload").addEventListener("change",async e=>{
+
+let file=e.target.files[0]
+fileName=file.name
+
+pdfBytes=await file.arrayBuffer()
+
+pdfjsDoc=await pdfjsLib.getDocument({data:pdfBytes}).promise
+
+let page=await pdfjsDoc.getPage(1)
+
+let viewport=page.getViewport({scale:1.5})
+
+canvas.width=viewport.width
+canvas.height=viewport.height
+
+await page.render({
+canvasContext:ctx,
+viewport:viewport
+}).promise
+
+})
+
+canvas.onmousedown=e=>{
+
+startX=e.offsetX
+startY=e.offsetY
+
+cropBox.style.left=startX+"px"
+cropBox.style.top=startY+"px"
+cropBox.style.width="0px"
+cropBox.style.height="0px"
+
+}
+
+canvas.onmousemove=e=>{
+
+if(startX==null) return
+
+let w=e.offsetX-startX
+let h=e.offsetY-startY
+
+cropBox.style.width=w+"px"
+cropBox.style.height=h+"px"
+
+}
+
+canvas.onmouseup=e=>{
+
+crop={
+x:startX,
+y:startY,
+w:e.offsetX-startX,
+h:e.offsetY-startY
+}
+
+startX=null
+
+}
+
+document.getElementById("export").onclick=async()=>{
+
+if(!crop){
+alert("กรุณาวาดกรอบก่อน")
+return
+}
+
+progress.style.width="0%"
+statusText.innerText="กำลังเริ่ม..."
+
+const srcPdf=await PDFLib.PDFDocument.load(pdfBytes)
+const newPdf=await PDFLib.PDFDocument.create()
+
+const pages=srcPdf.getPages()
+const total=pages.length
+
+let scale=pages[0].getWidth()/canvas.width
+
+let x=crop.x*scale
+let y=(canvas.height-crop.y-crop.h)*scale
+let w=crop.w*scale
+let h=crop.h*scale
+
+for(let i=0;i<total;i++){
+
+const [copiedPage]=await newPdf.copyPages(srcPdf,[i])
+
+copiedPage.setCropBox(x,y,w,h)
+
+newPdf.addPage(copiedPage)
+
+let percent=Math.floor(((i+1)/total)*100)
+
+progress.style.width=percent+"%"
+statusText.innerText="กำลังครอบหน้า "+(i+1)+" / "+total+" ("+percent+"%)"
+
+await new Promise(r=>setTimeout(r,0))
+
+}
+
+statusText.innerText="กำลังสร้างไฟล์..."
+
+const newBytes=await newPdf.save()
+
+let blob=new Blob([newBytes],{type:"application/pdf"})
+
+let a=document.createElement("a")
+a.href=URL.createObjectURL(blob)
+a.download=fileName
+a.click()
+
+statusText.innerText="เสร็จแล้ว"
+
+}
+
+</script>
+
+</body>
+</html>
