@@ -168,33 +168,37 @@
     </div>
 
     <!-- Video Modal (หน้าต่างเล่นวิดีโอ) ปรับ z-index เป็น 70 -->
-    <div id="videoModal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-black/95 backdrop-blur modal-animate" onclick="closeVideoModalOnOutside(event)">
-        <div class="relative w-full max-w-sm p-2 sm:p-4 flex flex-col items-center">
+    <div id="videoModal" class="fixed inset-0 z-[70] hidden flex-col items-center justify-center bg-black/95 backdrop-blur-md modal-animate" onclick="closeVideoModalOnOutside(event)">
+        <!-- ปรับโครงสร้าง Container ให้ใช้ความสูงหน้าจอ (h-full) แบบยืดหยุ่น -->
+        <div class="relative w-full max-w-md p-4 flex flex-col h-full max-h-[100dvh]">
             
-            <button onclick="closeVideoModal()" class="absolute -top-10 right-0 sm:-right-2 text-white hover:text-yellow-400 transition-colors flex items-center gap-1 z-50 bg-black/50 rounded-full px-3 py-1">
-                <span class="text-sm font-medium">ปิด</span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-            
-            <!-- ชื่อเรื่องกำลังเล่น -->
-            <div id="nowPlayingTitle" class="absolute -top-8 left-0 sm:-left-2 text-yellow-400 text-sm font-semibold max-w-[200px] truncate hidden sm:block"></div>
+            <!-- แถบด้านบน: ชื่อเรื่อง และ ปุ่มปิด -->
+            <div class="w-full flex justify-between items-center mb-3 mt-2 z-50">
+                <div id="nowPlayingTitle" class="text-yellow-400 text-sm font-semibold truncate flex-1 pr-2 drop-shadow-md"></div>
+                
+                <button onclick="closeVideoModal()" class="flex items-center gap-1.5 text-white hover:text-red-400 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-all border border-white/20 backdrop-blur-sm shrink-0">
+                    <span class="text-xs font-medium">ปิดวิดีโอ</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
 
-            <div class="w-full aspect-[9/16] bg-black rounded-lg shadow-2xl overflow-hidden border border-gray-800 relative flex items-center justify-center">
+            <!-- กล่องวิดีโอแนวตั้ง (ขยายเต็มพื้นที่อัตโนมัติด้วย flex-1) -->
+            <div class="w-full flex-1 bg-black rounded-xl shadow-2xl overflow-hidden border border-gray-700 relative flex items-center justify-center mb-3">
                 
                 <div id="videoLoader" class="absolute inset-0 flex items-center justify-center z-0 hidden">
                     <div class="loader"></div>
                 </div>
 
                 <!-- Container สำหรับ YouTube API -->
-                <div id="ytPlayerContainer" class="w-full h-full relative z-10 hidden">
-                    <div id="videoFrame"></div>
+                <div id="ytPlayerContainer" class="absolute inset-0 z-10 hidden">
+                    <div id="videoFrame" class="absolute inset-0 w-full h-full"></div>
                 </div>
 
                 <!-- Iframe สำรองสำหรับวิดีโอที่ไม่ได้มาจาก YouTube (เช่น Google Drive) -->
                 <iframe id="normalIframe" 
-                        class="w-full h-full relative z-10 hidden" 
+                        class="absolute inset-0 w-full h-full z-10 hidden" 
                         title="Video player"
                         frameborder="0" 
                         allow="autoplay; fullscreen" 
@@ -202,8 +206,13 @@
                 </iframe>
             </div>
             
-            <div class="mt-4 text-center text-xs text-gray-500 w-full">
-                วิดีโอจะเล่นตอนต่อไปอัตโนมัติเมื่อจบตอน
+            <!-- ข้อความแจ้งเตือนด้านล่าง -->
+            <div class="text-center text-xs text-gray-400 w-full flex items-center justify-center gap-2 mb-2 pb-safe">
+                <span class="relative flex h-2.5 w-2.5">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-500"></span>
+                </span>
+                เล่นตอนต่อไปอัตโนมัติเมื่อจบตอน
             </div>
         </div>
     </div>
@@ -4891,8 +4900,10 @@
 
                 if (isYtApiReady) {
                     if (!ytPlayer) {
-                        // สร้าง Player ครั้งแรก
+                        // สร้าง Player ครั้งแรก พร้อมบังคับขนาด 100%
                         ytPlayer = new YT.Player('videoFrame', {
+                            height: '100%',
+                            width: '100%',
                             videoId: videoId,
                             playerVars: { 
                                 'autoplay': 1, 
