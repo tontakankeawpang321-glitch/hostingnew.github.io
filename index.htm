@@ -20,12 +20,10 @@
         .snap-x { scroll-snap-type: x mandatory; }
         .snap-center { scroll-snap-align: center; }
 
-        /* Sidebar Transition */
         #sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .sidebar-open { transform: translateX(0); }
         .sidebar-closed { transform: translateX(-100%); }
 
-        /* Animations */
         .modal-animate { animation: bounceIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes bounceIn {
             0% { opacity: 0; transform: scale(0.9); }
@@ -165,9 +163,9 @@
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        // --- ดึงข้อมูลจาก URL Google Sheets CSV โดยตรง ---
+        // --- แหล่งข้อมูล CSV ---
         const videoCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS8iT7jQkM706x2ShINKLh13EZl2b5yyENbiz4DeW4H8qukELmQ-WuoP_ZqVA7iWciQ2QJIdRfQ9-uA/pub?output=csv';
-        const bookCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS51xA526yWCgTdtsf64OQTijUWrahbB_AreeiTaGVPO0wY2ryz7yFM8rGTKbRKTUf3BSSBdsIPeCrA/pub?output=csv'; // สามารถใส่ลิงก์ CSV สำหรับหนังสือได้ที่นี่
+        const bookCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS51xA526yWCgTdtsf64OQTijUWrahbB_AreeiTaGVPO0wY2ryz7yFM8rGTKbRKTUf3BSSBdsIPeCrA/pub?output=csv'; 
 
         let stories = [];
         let books = [];
@@ -176,6 +174,7 @@
         let ytPlayer;
         let currentIndex = -1;
 
+        // ดึงไอดีวิดีโอ YouTube
         function getYTId(url) {
             if (!url) return 'dQw4w9WgXcQ';
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -183,61 +182,89 @@
             return (match && match[2].length === 11) ? match[2] : 'dQw4w9WgXcQ';
         }
 
-        // ฟังก์ชันแยกข้อมูล CSV ที่รองรับเครื่องหมายคำพูด (Quotes)
-        function parseCSV(text) {
-            const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
-            return lines.map(line => {
-                // Regex สำหรับแยก CSV โดยคำนึงถึงเครื่องหมายคำพูด
-                const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-                if (!matches) return line.split(',').map(s => s.trim().replace(/^"|"$/g, ''));
-                return matches.map(s => s.trim().replace(/^"|"$/g, ''));
-            });
+        // ฟังก์ชันสร้าง Thumbnail จาก Google Drive URL
+        function getDriveThumbnail(url) {
+            if (!url || !url.includes('drive.google.com')) return null;
+            const match = url.match(/[-\w]{25,}/);
+            if (match) {
+                return `https://drive.google.com/thumbnail?id=${match[0]}&sz=w600`;
+            }
+            return null;
+        }
+
+        // ฟังก์ชันจัดการรูปภาพโหลดเสีย (ป้องกัน Syntax Error จากการเขียน String ซ้อนกันใน HTML)
+        function handleImgLoadError(el, type) {
+            if (type === 'book') {
+                el.parentElement.innerHTML = '<div class="bg-orange-50 w-full h-full flex items-center justify-center"><svg class="h-12 w-12 text-orange-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.247 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg></div>';
+            } else {
+                el.src = 'https://via.placeholder.com/640x360?text=No+Image';
+            }
+        }
+
+        // ฟังก์ชันแยก CSV ที่แม่นยำ
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current.trim());
+            return result;
         }
 
         async function initData() {
             try {
-                // ดึงข้อมูลวิดีโอจาก CSV Link
+                // โหลดข้อมูลวิดีโอ
                 if (videoCsvUrl) {
                     const response = await fetch(videoCsvUrl);
-                    const csvText = await response.text();
-                    let rows = parseCSV(csvText);
-                    
-                    // ข้ามหัวตารางถ้าคอลัมน์แรกมีคำว่า category หรือ หมวด
-                    if (rows.length > 0 && (rows[0][0].toLowerCase().includes('category') || rows[0][0].includes('หมวด'))) {
-                        rows = rows.slice(1);
-                    }
+                    const text = await response.text();
+                    let rows = text.split(/\r?\n/).filter(l => l.trim() !== '').map(parseCSVLine);
+                    // ข้าม Header
+                    if (rows.length > 0 && rows[0][0].toLowerCase().includes('category')) rows.shift();
 
                     stories = rows.map((p, i) => ({
                         id: 'v' + i,
                         type: 'video',
                         cat: p[0] || 'ทั่วไป',
-                        title: p[1] || 'ไม่มีชื่อ',
+                        title: p[1] || 'ไม่มีชื่อเรื่อง',
+                        mediaUrl: p[2] || '',
+                        imageUrl: p[3] || null,
                         ytId: getYTId(p[2])
                     }));
                 }
 
-                // ดึงข้อมูลหนังสือจาก CSV Link (ถ้ามี)
+                // โหลดข้อมูลหนังสือ
                 if (bookCsvUrl) {
                     const response = await fetch(bookCsvUrl);
-                    const csvText = await response.text();
-                    let rows = parseCSV(csvText);
-                    
-                    if (rows.length > 0 && (rows[0][0].toLowerCase().includes('category') || rows[0][0].includes('หมวด'))) {
-                        rows = rows.slice(1);
-                    }
+                    const text = await response.text();
+                    let rows = text.split(/\r?\n/).filter(l => l.trim() !== '').map(parseCSVLine);
+                    if (rows.length > 0 && (rows[0][0].toLowerCase().includes('category') || rows[0][0].includes('หมวด'))) rows.shift();
 
-                    books = rows.map((p, i) => ({
-                        id: 'b' + i,
-                        type: 'book',
-                        cat: p[0] || 'หนังสือทั่วไป',
-                        title: p[1] || 'ไม่มีชื่อ',
-                        url: p[2] || '#'
-                    }));
+                    books = rows.map((p, i) => {
+                        const url = p[2] || '#';
+                        return {
+                            id: 'b' + i,
+                            type: 'book',
+                            cat: p[0] || 'ทั่วไป',
+                            title: p[1] || 'ไม่มีชื่อหนังสือ',
+                            url: url,
+                            imageUrl: (p[3] && p[3].trim() !== '') ? p[3] : getDriveThumbnail(url)
+                        };
+                    });
                 }
 
                 renderContent();
             } catch (error) {
-                console.error("Error loading CSV data:", error);
+                console.error("Fetch Error:", error);
                 renderContent();
             }
         }
@@ -271,8 +298,8 @@
                             <h3 class="text-lg md:text-xl font-bold text-[#432C1A]">${cat}</h3>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="scrollLeftBtn(this)" class="p-2 bg-gray-50 rounded-full border border-gray-100 hover:bg-orange-50 transition-colors"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>
-                            <button onclick="scrollRightBtn(this)" class="p-2 bg-gray-50 rounded-full border border-gray-100 hover:bg-orange-50 transition-colors"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>
+                            <button onclick="scrollLeftBtn(this)" class="p-2 bg-gray-50 rounded-full border border-gray-100 hover:bg-orange-50 transition-colors text-gray-400"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>
+                            <button onclick="scrollRightBtn(this)" class="p-2 bg-gray-50 rounded-full border border-gray-100 hover:bg-orange-50 transition-colors text-gray-400"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>
                         </div>
                     </div>
                     <div class="flex overflow-x-auto snap-x no-scrollbar gap-4 pb-4 scroll-container">
@@ -286,22 +313,32 @@
         function renderCard(item) {
             const isFav = favorites.includes(item.id);
             const favClass = isFav ? 'text-red-500 fill-red-500' : 'text-gray-300';
+            
+            let displayImg;
+            if (item.imageUrl && item.imageUrl.trim() !== '') {
+                displayImg = `<img src="${item.imageUrl}" class="w-full h-full object-cover" onerror="handleImgLoadError(this, '${item.type}')">`;
+            } else if (item.type === 'video') {
+                displayImg = `<img src="https://img.youtube.com/vi/${item.ytId}/mqdefault.jpg" class="w-full h-full object-cover" onerror="handleImgLoadError(this, 'video')">`;
+            } else {
+                displayImg = `<div class="bg-orange-50 w-full h-full flex items-center justify-center"><svg class="h-12 w-12 text-orange-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.247 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg></div>`;
+            }
+
             if (item.type === 'book') {
                 return `
                     <div class="snap-center shrink-0 w-44 md:w-52 bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm relative flex flex-col hover-scale">
                         <button onclick="toggleFav(event, '${item.id}')" class="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 shadow-sm"><svg class="h-4 w-4 ${favClass}" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg></button>
-                        <div class="aspect-[3/4] bg-orange-50 flex items-center justify-center"><svg class="h-12 w-12 text-orange-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.247 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg></div>
-                        <div class="p-3 flex-1 flex flex-col justify-between"><h4 class="text-xs font-bold line-clamp-2 mb-2 h-8 leading-tight text-[#432C1A]">${item.title}</h4><a href="${item.url}" target="_blank" class="block w-full py-2 text-[10px] text-center bg-orange-100 text-orange-800 font-bold rounded-lg hover:bg-orange-500 hover:text-white transition-colors">อ่านเลย</a></div>
+                        <div class="aspect-[3/4] overflow-hidden bg-gray-100">${displayImg}</div>
+                        <div class="p-3 flex-1 flex flex-col justify-between border-t border-gray-50"><h4 class="text-xs font-bold line-clamp-2 mb-2 h-8 leading-tight text-[#432C1A]">${item.title}</h4><a href="${item.url}" target="_blank" class="block w-full py-2 text-[10px] text-center bg-orange-100 text-orange-800 font-bold rounded-lg hover:bg-orange-500 hover:text-white transition-colors">อ่านเลย</a></div>
                     </div>`;
             }
             return `
                 <div class="snap-center shrink-0 w-64 md:w-72 bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm group relative hover-scale">
                     <button onclick="toggleFav(event, '${item.id}')" class="absolute top-2 right-2 z-10 p-2 rounded-full bg-white/80 shadow-sm"><svg class="h-4 w-4 ${favClass}" viewBox="0 0 24 24" stroke="currentColor"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg></button>
-                    <div class="aspect-video cursor-pointer relative" onclick="playVideo('${item.id}')">
-                        <img src="https://img.youtube.com/vi/${item.ytId}/mqdefault.jpg" class="w-full h-full object-cover">
+                    <div class="aspect-video cursor-pointer relative overflow-hidden" onclick="playVideo('${item.id}')">
+                        ${displayImg}
                         <div class="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/30 transition-colors"><div class="bg-white/90 p-2 rounded-full text-[#E86A33] shadow-lg"><svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168l4.2 2.4a1 1 0 010 1.732l-4.2 2.4A1 1 0 018 12.832V7.168a1 1 0 011.555-.832z" /></svg></div></div>
                     </div>
-                    <div class="p-3"><h4 class="text-xs md:text-sm font-bold line-clamp-1 text-[#432C1A]">${item.title}</h4></div>
+                    <div class="p-3 border-t border-gray-50"><h4 class="text-xs md:text-sm font-bold line-clamp-1 text-[#432C1A]">${item.title}</h4></div>
                 </div>`;
         }
 
@@ -337,10 +374,12 @@
                         sideBtn.classList.remove('text-gray-600', 'font-medium');
                         sideIconBg?.classList.add('bg-white', 'shadow-sm');
                         sideIcon?.classList.add('text-orange-600');
+                        sideIcon?.classList.remove('text-gray-500');
                     } else {
                         sideBtn.classList.remove('bg-orange-100', 'text-orange-800', 'font-semibold');
                         sideBtn.classList.add('text-gray-600', 'font-medium');
                         sideIconBg?.classList.remove('bg-white', 'shadow-sm');
+                        sideIcon?.classList.add('text-gray-500');
                         sideIcon?.classList.remove('text-orange-600');
                     }
                 }
