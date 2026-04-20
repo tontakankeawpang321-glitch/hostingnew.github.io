@@ -3,628 +3,399 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ชาดก 500 ชาติ</title>
+    <title>ชาดก ๕๐๐ ชาติ - นิทานสอนใจ</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Prompt', sans-serif; }
-        .modal-animate { animation: fadeIn 0.2s ease-out; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+        body { 
+            font-family: 'Prompt', sans-serif; 
+            scroll-behavior: smooth; 
+            overflow-x: hidden; 
+            background-color: #FDFBF7; 
+            color: #432C1A; 
         }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Loading Spinner */
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 4px solid #eab308;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
+        .snap-x { scroll-snap-type: x mandatory; }
+        .snap-center { scroll-snap-align: center; }
+
+        /* Sidebar Transition */
+        #sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar-open { transform: translateX(0); }
+        .sidebar-closed { transform: translateX(-100%); }
+
+        /* Animations */
+        .modal-animate { animation: bounceIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+
+        .hover-scale { transition: transform 0.2s ease; }
+        .hover-scale:hover { transform: translateY(-4px); }
+
+        .bg-app-primary { background-color: #E86A33; }
+        .text-app-primary { color: #E86A33; }
+        .border-app { border-color: #EED7B1; }
     </style>
 </head>
-<body class="bg-gray-900 min-h-screen text-gray-100 flex flex-col pb-20">
+<body class="flex min-h-screen">
 
-    <div class="max-w-7xl mx-auto p-3 w-full flex-grow">
-
-        <div class="text-center py-6 mb-4">
-            <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-300 to-yellow-500 drop-shadow-sm mb-2">
-                ชาดก 500 ชาติ
-            </h1>
-            <p class="text-gray-400 text-sm sm:text-base">รวมเรื่องราวนิทานชาดกสอนใจ (เล่นต่อเนื่องอัตโนมัติ)</p>
-            <div class="h-1 w-24 bg-yellow-500 mx-auto mt-4 rounded-full opacity-70"></div>
-        </div>
-        
-        <div class="flex flex-col gap-4 mb-6">
-            
-            <div class="flex flex-col sm:flex-row justify-between items-center px-1 gap-4">
-                <h2 class="text-xl font-bold text-white hidden sm:block">รายการทั้งหมด</h2>
-                
-                <!-- ช่องค้นหา -->
-                <div class="relative w-full sm:w-72 group">
-                    <input type="text" 
-                           id="searchInput"
-                           oninput="handleSearch(this.value)"
-                           placeholder="ค้นหาชื่อเรื่อง..." 
-                           class="w-full bg-gray-800 text-gray-200 border border-gray-700 rounded-full py-2 pl-4 pr-10 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm placeholder-gray-500 shadow-sm group-hover:border-gray-600">
-                    <button class="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-yellow-400 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </button>
+    <!-- Sidebar (เมนูยุบขยาย) -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-[60] w-72 bg-white border-r border-app sidebar-closed md:sidebar-open shadow-xl md:shadow-none flex flex-col">
+        <div class="p-6 flex items-center justify-between border-b border-app bg-orange-50/50">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-app-primary flex items-center justify-center shadow-md text-white text-xl">
+                    🪷
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-orange-900 leading-tight">ชาดก ๕๐๐ ชาติ</h1>
+                    <p class="text-xs text-orange-600 font-medium">คลังนิทานคุณธรรม</p>
                 </div>
             </div>
-        </div>
-        
-        <div id="storyGrid" class="grid grid-cols-3 gap-3 sm:gap-6 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 justify-items-center mb-8">
-            <!-- ข้อมูลการ์ดจะถูกใส่ที่นี่ผ่าน JS -->
-        </div>
-
-        <!-- ระบบ Pagination (แบ่งหน้า) ย้ายมาด้านล่าง -->
-        <div id="paginationControls" class="flex justify-between items-center bg-gray-800 p-3 rounded-lg border border-gray-700 max-w-2xl mx-auto mb-8 shadow-lg">
-            <button id="prevBtn" onclick="prevPage()" class="px-5 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed rounded text-sm font-medium transition-colors shadow-sm">
-                ย้อนกลับ
-            </button>
-            <span id="pageInfo" class="text-sm font-semibold text-yellow-400">หน้า 1 / 1</span>
-            <button id="nextBtn" onclick="nextPage()" class="px-5 py-2 bg-yellow-600 hover:bg-yellow-500 text-black disabled:bg-gray-700 disabled:text-gray-400 disabled:opacity-30 disabled:cursor-not-allowed rounded text-sm font-medium transition-colors shadow-sm">
-                ถัดไป
+            <button onclick="toggleSidebar()" class="md:hidden p-2 text-orange-800 bg-orange-100 rounded-full hover:bg-orange-200">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
         </div>
 
-        <div id="noResult" class="hidden text-center text-gray-500 mt-10 w-full col-span-full pb-10">
-            <p>ไม่พบรายการที่ค้นหา</p>
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <p class="px-4 text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">เมนูหลัก</p>
+            
+            <button onclick="changeView('video')" id="side-video" class="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl bg-orange-100 text-orange-800 font-semibold transition-all">
+                <div class="p-2 bg-white rounded-xl shadow-sm side-icon-bg">
+                    <svg class="h-5 w-5 text-orange-600 side-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <span>วิดีโอนิทาน</span>
+            </button>
+
+            <button onclick="changeView('book')" id="side-book" class="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-gray-600 hover:bg-orange-50 font-medium transition-all">
+                <div class="p-2 bg-gray-100 rounded-xl side-icon-bg">
+                    <svg class="h-5 w-5 text-gray-500 side-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.247 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                </div>
+                <span>ห้องสมุดชาดก</span>
+            </button>
+
+            <div class="pt-4 mt-4 border-t border-orange-50">
+                <a href="https://pdpa.pro/policies/view/th/4FM1QqDBTJkGBBva4fZvhvQ1" target="_blank" class="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-gray-500 hover:bg-gray-50 font-medium transition-all">
+                    <div class="p-2 bg-gray-100 rounded-xl">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                    </div>
+                    <span>นโยบายส่วนตัว</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="p-5 border-t border-app bg-orange-50/30">
+            <div class="bg-white rounded-xl p-3 shadow-sm flex items-center justify-center gap-2 border border-orange-100">
+                <svg class="h-5 w-5 text-red-600" viewBox="0 0 24 24" fill="currentColor"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                <span class="text-xs font-semibold text-gray-600 uppercase tracking-tighter">Powered by YouTube</span>
+            </div>
         </div>
+    </aside>
+
+    <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/20 z-50 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+    <div class="flex-1 flex flex-col md:ml-72 min-w-0 h-screen overflow-y-auto">
+        <header class="sticky top-0 z-40 bg-[#FDFBF7]/90 backdrop-blur-md border-b border-app p-4 shadow-sm">
+            <div class="max-w-5xl mx-auto flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="md:hidden p-2 text-orange-800 bg-white shadow-sm border border-orange-100 rounded-xl hover:bg-orange-50">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                </button>
+                <div class="flex-1 relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400 group-focus-within:text-app-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    </div>
+                    <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="ค้นหาชาดก..." 
+                           class="w-full bg-white border border-gray-200 rounded-2xl py-3 pl-12 pr-4 focus:outline-none focus:border-app-primary focus:ring-2 focus:ring-orange-200 transition-all text-sm shadow-sm text-gray-700">
+                </div>
+            </div>
+        </header>
+
+        <main class="p-4 md:p-8 max-w-6xl mx-auto w-full pb-32">
+            <div class="bg-gradient-to-r from-orange-400 to-amber-500 rounded-3xl p-6 md:p-8 mb-8 text-white shadow-lg relative overflow-hidden flex items-center">
+                <div class="relative z-10">
+                    <h2 id="viewTitle" class="text-2xl md:text-3xl font-bold mb-2">วิดีโอนิทานชาดก</h2>
+                    <p id="viewSubtitle" class="text-orange-50 text-sm md:text-base">เลือกรับชมเรื่องราวคุณธรรมที่สอดแทรกคติสอนใจ</p>
+                </div>
+            </div>
+            <div id="categoryContainer" class="space-y-10"></div>
+            <div id="noResult" class="hidden text-center py-20 flex flex-col items-center justify-center text-gray-400">
+                <p class="text-lg font-medium text-gray-500">ไม่พบข้อมูลที่ค้นหา</p>
+            </div>
+        </main>
     </div>
 
-    <!-- แถบเมนูด้านล่าง (Bottom Navigation) -->
-    <nav class="fixed bottom-0 w-full bg-gray-900 border-t border-gray-800 z-40 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]">
-        <div class="flex justify-around items-center p-2 max-w-md mx-auto">
-            <button onclick="goHome()" id="navHome" class="flex flex-col items-center w-full py-1 text-yellow-500 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-                <span class="text-[10px] mt-1 font-medium">หน้าหลัก</span>
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-100 px-2 py-2 pb-safe md:hidden shadow-[0_-4px_15px_rgba(0,0,0,0.05)]">
+        <div class="flex justify-around items-center max-w-md mx-auto">
+            <button id="nav-video" onclick="changeView('video')" class="flex flex-col items-center p-2 text-app-primary flex-1 transition-colors">
+                <div class="bg-orange-100 p-1.5 rounded-xl mb-1 nav-icon-bg">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <span class="text-[10px] font-semibold">วิดีโอ</span>
             </button>
-            <button onclick="openFavoritesModal()" id="navFav" class="flex flex-col items-center w-full py-1 text-gray-400 hover:text-yellow-500 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-                <span class="text-[10px] mt-1 font-medium">รายการโปรด</span>
+            <button id="nav-book" onclick="changeView('book')" class="flex flex-col items-center p-2 text-gray-400 flex-1 transition-colors">
+                <div class="p-1.5 rounded-xl mb-1 nav-icon-bg">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.247 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                </div>
+                <span class="text-[10px] font-semibold">หนังสือ</span>
+            </button>
+            <button id="nav-fav" onclick="changeView('fav')" class="flex flex-col items-center p-2 text-gray-400 flex-1 transition-colors">
+                <div class="p-1.5 rounded-xl mb-1 nav-icon-bg">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                </div>
+                <span class="text-[10px] font-semibold">รายการโปรด</span>
             </button>
         </div>
     </nav>
 
-    <!-- Favorites Modal (หน้าต่างแสดงรายการโปรด) -->
-    <div id="favoritesModal" class="fixed inset-0 z-50 hidden items-start justify-center bg-gray-900/95 backdrop-blur-md pt-6 px-3 overflow-y-auto pb-24" onclick="closeFavoritesOnOutside(event)">
-        <div class="bg-gray-800 border border-gray-700 w-full max-w-5xl rounded-2xl p-4 sm:p-6 relative min-h-[60vh] modal-animate shadow-2xl">
-            <!-- ปุ่มปิด -->
-            <button onclick="closeFavoritesModal()" class="absolute top-4 right-4 p-2 bg-gray-700 rounded-full text-gray-200 hover:text-white hover:bg-red-500 transition-all z-10">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-            
-            <div class="text-center mb-6">
-                <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-500 flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-red-500 fill-red-500" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                    เรื่องโปรดของคุณ
-                </h2>
-                <div class="h-1 w-16 bg-red-500 mx-auto mt-3 rounded-full opacity-70"></div>
-            </div>
-
-            <div id="favoritesGrid" class="grid grid-cols-3 gap-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-5 justify-items-center">
-                <!-- ข้อมูลรายการโปรดจะแสดงที่นี่ -->
-            </div>
-
-            <div id="noFavoritesMsg" class="hidden flex-col items-center justify-center text-gray-500 mt-16 mb-10">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-                <p>คุณยังไม่ได้บันทึกเรื่องโปรดใดๆ</p>
-                <p class="text-sm mt-2">กดรูปหัวใจในการ์ดเพื่อบันทึกเก็บไว้ดูทีหลัง</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Selection Modal (หน้าต่างเลือกโหมด) ปรับ z-index เป็น 60 -->
-    <div id="selectionModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4" onclick="closeModalOnOutside(event)">
-        <div class="bg-gray-800 border border-gray-700 w-full max-w-sm rounded-2xl shadow-2xl modal-animate relative overflow-hidden flex flex-col">
-            <div class="h-32 w-full relative">
-                <img id="modalImage" src="" alt="Modal Cover" class="w-full h-full object-cover opacity-60">
-                <div class="absolute inset-0 bg-gradient-to-t from-gray-800 to-transparent"></div>
-                <button onclick="closeModal()" class="absolute top-2 right-2 p-1 bg-black/40 rounded-full text-gray-200 hover:text-white hover:bg-black/60 transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+    <!-- Video Modal Player -->
+    <div id="videoModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/90 backdrop-blur-md p-4">
+        <div class="relative w-full max-w-5xl aspect-video bg-gray-900 rounded-3xl overflow-hidden shadow-2xl modal-animate flex flex-col">
+            <div class="flex justify-between items-center p-4 absolute top-0 left-0 right-0 z-20">
+                <span id="playerTitle" class="text-white font-semibold truncate max-w-xs md:max-w-md">กำลังโหลด...</span>
+                <button onclick="closeVideoModal()" class="p-2 bg-white/10 hover:bg-red-500 text-white rounded-full transition-colors border border-white/20">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
-            <div class="p-6 -mt-6 relative z-10">
-                <div class="text-center mb-6">
-                    <h2 id="modalTitle" class="text-xl font-bold text-white mb-2 drop-shadow-md">ชื่อเรื่อง</h2>
-                    <p class="text-gray-400 text-xs">เลือกโหมดการอ่านที่คุณต้องการ</p>
-                </div>
-                <div class="space-y-3">
-                    <a id="btnSynopsis" href="#" target="_blank" class="block w-full py-3 px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-xl text-center transition-all duration-200 border border-gray-600 hover:border-yellow-400 group">
-                        <div class="flex items-center justify-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                            <span class="text-sm font-medium">แบบหนังสือการ์ตูนสั้น</span>
-                        </div>
-                    </a>
-                    
-                    <button id="btnFullStory" type="button" class="block w-full py-3 px-4 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 text-white rounded-xl text-center shadow-lg hover:shadow-yellow-500/30 transition-all duration-200 transform hover:-translate-y-0.5">
-                        <div class="flex items-center justify-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                            <span class="text-sm font-semibold">แบบวิดีโอเล่าเรื่อง (เล่นต่อเนื่อง)</span>
-                        </div>
-                    </button>
-                </div>
-            </div>
+            <div id="player" class="flex-1 w-full h-full"></div>
         </div>
     </div>
 
-    <!-- Video Modal (หน้าต่างเล่นวิดีโอ) ปรับ z-index เป็น 70 -->
-    <div id="videoModal" class="fixed inset-0 z-[70] hidden flex-col items-center justify-center bg-black/95 backdrop-blur-md modal-animate" onclick="closeVideoModalOnOutside(event)">
-        <!-- ปรับโครงสร้าง Container ให้ใช้ความสูงหน้าจอ (h-full) แบบยืดหยุ่น -->
-        <div class="relative w-full max-w-md p-4 flex flex-col h-full max-h-[100dvh]">
-            
-            <!-- แถบด้านบน: ชื่อเรื่อง และ ปุ่มปิด -->
-            <div class="w-full flex justify-between items-center mb-3 mt-2 z-50">
-                <div id="nowPlayingTitle" class="text-yellow-400 text-sm font-semibold truncate flex-1 pr-2 drop-shadow-md"></div>
-                
-                <button onclick="closeVideoModal()" class="flex items-center gap-1.5 text-white hover:text-red-400 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-all border border-white/20 backdrop-blur-sm shrink-0">
-                    <span class="text-xs font-medium">ปิดวิดีโอ</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-
-            <!-- กล่องวิดีโอแนวตั้ง (ขยายเต็มพื้นที่อัตโนมัติด้วย flex-1) -->
-            <div class="w-full flex-1 bg-black rounded-xl shadow-2xl overflow-hidden border border-gray-700 relative flex items-center justify-center mb-3">
-                
-                <div id="videoLoader" class="absolute inset-0 flex items-center justify-center z-0 hidden">
-                    <div class="loader"></div>
-                </div>
-
-                <!-- Container สำหรับ YouTube API -->
-                <div id="ytPlayerContainer" class="absolute inset-0 z-10 hidden">
-                    <div id="videoFrame" class="absolute inset-0 w-full h-full"></div>
-                </div>
-
-                <!-- Iframe สำรองสำหรับวิดีโอที่ไม่ได้มาจาก YouTube (เช่น Google Drive) -->
-                <iframe id="normalIframe" 
-                        class="absolute inset-0 w-full h-full z-10 hidden" 
-                        title="Video player"
-                        frameborder="0" 
-                        allow="autoplay; fullscreen" 
-                        allowfullscreen>
-                </iframe>
-            </div>
-            
-            <!-- ข้อความแจ้งเตือนด้านล่าง -->
-            <div class="text-center text-xs text-gray-400 w-full flex items-center justify-center gap-2 mb-2 pb-safe">
-                <span class="relative flex h-2.5 w-2.5">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-500"></span>
-                </span>
-                เล่นตอนต่อไปอัตโนมัติเมื่อจบตอน
-            </div>
-        </div>
-    </div>
-
-    <!-- YouTube IFrame API Script -->
     <script src="https://www.youtube.com/iframe_api"></script>
-
     <script>
-        function escapeHtml(text) {
-            if (!text) return text;
-            return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-        }
+        // --- ดึงข้อมูลจาก URL Google Sheets CSV โดยตรง ---
+        const videoCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS8iT7jQkM706x2ShINKLh13EZl2b5yyENbiz4DeW4H8qukELmQ-WuoP_ZqVA7iWciQ2QJIdRfQ9-uA/pub?output=csv';
+        const bookCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS51xA526yWCgTdtsf64OQTijUWrahbB_AreeiTaGVPO0wY2ryz7yFM8rGTKbRKTUf3BSSBdsIPeCrA/pub?output=csv'; // สามารถใส่ลิงก์ CSV สำหรับหนังสือได้ที่นี่
 
-        const stories = [
-          
+        let stories = [];
+        let books = [];
+        let favorites = JSON.parse(localStorage.getItem('jataka_favs_v3')) || [];
+        let currentView = 'video';
+        let ytPlayer;
+        let currentIndex = -1;
 
-        // --- ตั้งค่าระบบหน้า (Pagination) ---
-        const ITEMS_PER_PAGE = 20;
-        let currentPage = 1;
-        let filteredStories = [...stories];
-        
-        // --- ระบบรายการโปรด (Local Storage) ---
-        let favoriteIds = JSON.parse(localStorage.getItem('chadok_favorites')) || [];
-
-        // --- ตั้งค่าระบบเล่นอัตโนมัติ (Podcast) ---
-        let isYtApiReady = false;
-        let ytPlayer = null;
-        let currentPlayingStoryIndex = -1; // เก็บ index ของเรื่องที่กำลังเล่นใน array stories
-
-        // ฟังก์ชัน Callback ของ YouTube IFrame API
-        function onYouTubeIframeAPIReady() {
-            isYtApiReady = true;
-        }
-
-        // --- ฟังก์ชันแบ่งหน้าและแสดงผล ---
-        function renderStories() {
-            const grid = document.getElementById('storyGrid');
-            const noResult = document.getElementById('noResult');
-            
-            const totalPages = Math.ceil(filteredStories.length / ITEMS_PER_PAGE) || 1;
-            
-            // ป้องกันหน้าที่เกิน
-            if (currentPage > totalPages) currentPage = totalPages;
-            if (currentPage < 1) currentPage = 1;
-
-            updatePaginationUI(totalPages);
-
-            const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
-            const endIdx = startIdx + ITEMS_PER_PAGE;
-            const displayData = filteredStories.slice(startIdx, endIdx);
-
-            if (displayData.length === 0) {
-                grid.innerHTML = '';
-                noResult.classList.remove('hidden');
-                return;
-            } else {
-                noResult.classList.add('hidden');
-            }
-
-            const htmlContent = displayData.map(story => {
-                const mainIndex = stories.findIndex(s => s.id === story.id);
-                const isFav = favoriteIds.includes(story.id);
-                
-                return `
-                <div class="group relative w-full max-w-[128px] bg-gray-800 rounded-lg overflow-hidden shadow-md cursor-pointer border border-gray-700 hover:border-yellow-500 transition-all duration-300 hover:-translate-y-1">
-                    <!-- ปุ่มหัวใจ มุมขวาบนสุดของการ์ด -->
-                    <button onclick="toggleFavorite(event, ${story.id})" class="absolute top-1.5 right-1.5 p-1.5 bg-black/50 rounded-full z-20 hover:bg-black/80 transition-colors backdrop-blur-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-colors duration-200 ${isFav ? 'text-red-500 fill-red-500' : 'text-white'}" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                    </button>
-                    
-                    <div onclick="openModal(${mainIndex})" class="w-full h-full">
-                        <div class="aspect-[2/3] w-full overflow-hidden relative">
-                            <img src="${story.image}" alt="${escapeHtml(story.title)}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
-                        </div>
-                        <div class="absolute bottom-0 left-0 right-0 p-2">
-                            <h3 class="text-xs font-bold text-white leading-tight mb-0.5 line-clamp-2 drop-shadow-md">
-                                ${story.id}. ${story.title}
-                            </h3>
-                            <p class="text-[9px] text-gray-300 line-clamp-1">${story.category}</p>
-                        </div>
-                    </div>
-                </div>
-            `}).join('');
-
-            grid.innerHTML = htmlContent;
-        }
-
-        function updatePaginationUI(totalPages) {
-            document.getElementById('pageInfo').innerText = `หน้า ${currentPage} / ${totalPages}`;
-            document.getElementById('prevBtn').disabled = currentPage === 1;
-            document.getElementById('nextBtn').disabled = currentPage === totalPages;
-        }
-
-        function prevPage() {
-            if (currentPage > 1) {
-                currentPage--;
-                renderStories();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        }
-
-        function nextPage() {
-            const totalPages = Math.ceil(filteredStories.length / ITEMS_PER_PAGE);
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderStories();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        }
-
-        function handleSearch(val) {
-            const searchText = val.trim().toLowerCase();
-            if (searchText !== '') {
-                filteredStories = stories.filter(story => 
-                    story.title.toLowerCase().includes(searchText) || 
-                    story.id.toString().includes(searchText)
-                );
-            } else {
-                filteredStories = [...stories];
-            }
-            currentPage = 1; // กลับไปหน้าแรกเสมอเมื่อค้นหา
-            renderStories();
-        }
-
-        // --- ระบบรายการโปรด ---
-        function toggleFavorite(event, storyId) {
-            event.stopPropagation(); // ป้องกันการกดทะลุไปเปิดเรื่อง
-            
-            const index = favoriteIds.indexOf(storyId);
-            if (index > -1) {
-                favoriteIds.splice(index, 1); // ลบออก
-            } else {
-                favoriteIds.push(storyId); // เพิ่มเข้า
-            }
-            
-            // เซฟลง LocalStorage
-            localStorage.setItem('chadok_favorites', JSON.stringify(favoriteIds));
-            
-            // รีเฟรช UI
-            renderStories();
-            
-            // ถ้าระหว่างกด หัวใจหน้าต่าง Favorites Modal เปิดอยู่ ให้อัพเดตด้วย
-            if (!document.getElementById('favoritesModal').classList.contains('hidden')) {
-                renderFavoritesModal();
-            }
-        }
-
-        // --- การควบคุม Bottom Nav ---
-        function goHome() {
-            closeFavoritesModal();
-            closeModal();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            
-            document.getElementById('navHome').classList.replace('text-gray-400', 'text-yellow-500');
-            document.getElementById('navFav').classList.replace('text-yellow-500', 'text-gray-400');
-        }
-
-        function openFavoritesModal() {
-            document.getElementById('navFav').classList.replace('text-gray-400', 'text-yellow-500');
-            document.getElementById('navHome').classList.replace('text-yellow-500', 'text-gray-400');
-            
-            renderFavoritesModal();
-            
-            const favModal = document.getElementById('favoritesModal');
-            favModal.classList.remove('hidden');
-            favModal.classList.add('flex');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeFavoritesModal() {
-            const favModal = document.getElementById('favoritesModal');
-            favModal.classList.add('hidden');
-            favModal.classList.remove('flex');
-            document.body.style.overflow = 'auto';
-            
-            document.getElementById('navHome').classList.replace('text-gray-400', 'text-yellow-500');
-            document.getElementById('navFav').classList.replace('text-yellow-500', 'text-gray-400');
-        }
-
-        function closeFavoritesOnOutside(event) {
-            if (event.target === document.getElementById('favoritesModal')) {
-                closeFavoritesModal();
-            }
-        }
-
-        function renderFavoritesModal() {
-            const grid = document.getElementById('favoritesGrid');
-            const noFavsMsg = document.getElementById('noFavoritesMsg');
-            
-            // ดึงข้อมูลเรื่องที่เป็นรายการโปรด
-            const favStoriesData = stories.filter(story => favoriteIds.includes(story.id));
-            
-            if (favStoriesData.length === 0) {
-                grid.innerHTML = '';
-                noFavsMsg.classList.remove('hidden');
-                noFavsMsg.classList.add('flex');
-            } else {
-                noFavsMsg.classList.add('hidden');
-                noFavsMsg.classList.remove('flex');
-                
-                grid.innerHTML = favStoriesData.map(story => {
-                    const mainIndex = stories.findIndex(s => s.id === story.id);
-                    return `
-                    <div class="group relative w-full max-w-[128px] bg-gray-800 rounded-lg overflow-hidden shadow-md cursor-pointer border border-gray-700 hover:border-yellow-500 transition-all duration-300 hover:-translate-y-1">
-                        <button onclick="toggleFavorite(event, ${story.id})" class="absolute top-1.5 right-1.5 p-1.5 bg-black/50 rounded-full z-20 hover:bg-black/80 transition-colors backdrop-blur-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-500 fill-red-500 transition-colors duration-200" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                            </svg>
-                        </button>
-                        
-                        <div onclick="openModal(${mainIndex})" class="w-full h-full">
-                            <div class="aspect-[2/3] w-full overflow-hidden relative">
-                                <img src="${story.image}" alt="${escapeHtml(story.title)}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
-                            </div>
-                            <div class="absolute bottom-0 left-0 right-0 p-2">
-                                <h3 class="text-xs font-bold text-white leading-tight mb-0.5 line-clamp-2 drop-shadow-md">
-                                    ${story.id}. ${story.title}
-                               </h3>
-                            </div>
-                        </div>
-                    </div>
-                `}).join('');
-            }
-        }
-
-        // --- ฟังก์ชันจัดการ Modal ---
-        function openModal(mainIndex) {
-            const story = stories[mainIndex];
-            if(!story) return;
-
-            const modal = document.getElementById('selectionModal');
-            document.getElementById('modalImage').src = story.image;
-            document.getElementById('modalTitle').innerText = `${story.id}. ${story.title}`;
-            document.getElementById('btnSynopsis').href = story.synopsisUrl;
-            
-            const btnVideo = document.getElementById('btnFullStory');
-            
-            if (!story.fullStoryUrl || story.fullStoryUrl === '#' || story.fullStoryUrl.trim() === '') {
-                btnVideo.classList.add('opacity-50', 'cursor-not-allowed');
-                btnVideo.onclick = (e) => e.preventDefault();
-            } else {
-                btnVideo.classList.remove('opacity-50', 'cursor-not-allowed');
-                btnVideo.onclick = () => {
-                    openVideoModal(mainIndex);
-                };
-            }
-
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            
-            // กรณีเปิด Modal เลือกเรื่อง ให้คงสถานะ overflow ไว้เหมือนเดิม 
-            // (ป้องกันบั๊กเวลากดมาจากหน้า Favorites Modal)
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('selectionModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            
-            // เช็คว่า Favorites modal ยังเปิดอยู่ไหม ถ้าไม่ ให้คืนค่า overflow หน้าหลัก
-            if(document.getElementById('favoritesModal').classList.contains('hidden')){
-                document.body.style.overflow = 'auto';
-            }
-        }
-
-        function closeModalOnOutside(event) {
-            if (event.target === document.getElementById('selectionModal')) closeModal();
-        }
-
-        // --- ระบบ Video Player & Auto-play ---
-        function getYoutubeId(url) {
+        function getYTId(url) {
+            if (!url) return 'dQw4w9WgXcQ';
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
             const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
+            return (match && match[2].length === 11) ? match[2] : 'dQw4w9WgXcQ';
         }
 
-        function openVideoModal(mainIndex) {
-            closeModal(); // ปิด Modal เลือกโหมด
-            // ปิด Favorites Modal ด้วยถ้าเปิดอยู่
-            if (!document.getElementById('favoritesModal').classList.contains('hidden')) {
-                closeFavoritesModal();
-            }
-            
-            currentPlayingStoryIndex = mainIndex;
-            const story = stories[mainIndex];
-            if(!story) return;
+        // ฟังก์ชันแยกข้อมูล CSV ที่รองรับเครื่องหมายคำพูด (Quotes)
+        function parseCSV(text) {
+            const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
+            return lines.map(line => {
+                // Regex สำหรับแยก CSV โดยคำนึงถึงเครื่องหมายคำพูด
+                const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                if (!matches) return line.split(',').map(s => s.trim().replace(/^"|"$/g, ''));
+                return matches.map(s => s.trim().replace(/^"|"$/g, ''));
+            });
+        }
 
-            const videoModal = document.getElementById('videoModal');
-            const videoLoader = document.getElementById('videoLoader');
-            const ytContainer = document.getElementById('ytPlayerContainer');
-            const normalIframe = document.getElementById('normalIframe');
-            
-            // แสดงชื่อเรื่องที่กำลังเล่น
-            document.getElementById('nowPlayingTitle').innerText = `กำลังเล่น: ตอนที่ ${story.id}`;
-            
-            videoLoader.style.display = 'flex';
-            const videoId = getYoutubeId(story.fullStoryUrl);
-
-            if (videoId) {
-                // เป็น YouTube Video
-                normalIframe.classList.add('hidden');
-                normalIframe.src = ''; // หยุด iframe สำรอง
-                ytContainer.classList.remove('hidden');
-
-                if (isYtApiReady) {
-                    if (!ytPlayer) {
-                        // สร้าง Player ครั้งแรก พร้อมบังคับขนาด 100%
-                        ytPlayer = new YT.Player('videoFrame', {
-                            height: '100%',
-                            width: '100%',
-                            videoId: videoId,
-                            playerVars: { 
-                                'autoplay': 1, 
-                                'playsinline': 1,
-                                'rel': 0
-                            },
-                            events: {
-                                'onReady': (event) => {
-                                    videoLoader.style.display = 'none';
-                                    event.target.playVideo();
-                                },
-                                'onStateChange': onPlayerStateChange
-                            }
-                        });
-                    } else {
-                        // มี Player อยู่แล้ว โหลดเรื่องใหม่
-                        ytPlayer.loadVideoById(videoId);
-                        videoLoader.style.display = 'none';
+        async function initData() {
+            try {
+                // ดึงข้อมูลวิดีโอจาก CSV Link
+                if (videoCsvUrl) {
+                    const response = await fetch(videoCsvUrl);
+                    const csvText = await response.text();
+                    let rows = parseCSV(csvText);
+                    
+                    // ข้ามหัวตารางถ้าคอลัมน์แรกมีคำว่า category หรือ หมวด
+                    if (rows.length > 0 && (rows[0][0].toLowerCase().includes('category') || rows[0][0].includes('หมวด'))) {
+                        rows = rows.slice(1);
                     }
-                } else {
-                    // กรณี API โหลดไม่ทัน (ป้องกันไว้ก่อน)
-                    setTimeout(() => openVideoModal(mainIndex), 500);
-                    return;
+
+                    stories = rows.map((p, i) => ({
+                        id: 'v' + i,
+                        type: 'video',
+                        cat: p[0] || 'ทั่วไป',
+                        title: p[1] || 'ไม่มีชื่อ',
+                        ytId: getYTId(p[2])
+                    }));
                 }
+
+                // ดึงข้อมูลหนังสือจาก CSV Link (ถ้ามี)
+                if (bookCsvUrl) {
+                    const response = await fetch(bookCsvUrl);
+                    const csvText = await response.text();
+                    let rows = parseCSV(csvText);
+                    
+                    if (rows.length > 0 && (rows[0][0].toLowerCase().includes('category') || rows[0][0].includes('หมวด'))) {
+                        rows = rows.slice(1);
+                    }
+
+                    books = rows.map((p, i) => ({
+                        id: 'b' + i,
+                        type: 'book',
+                        cat: p[0] || 'หนังสือทั่วไป',
+                        title: p[1] || 'ไม่มีชื่อ',
+                        url: p[2] || '#'
+                    }));
+                }
+
+                renderContent();
+            } catch (error) {
+                console.error("Error loading CSV data:", error);
+                renderContent();
+            }
+        }
+
+        function renderContent(data = null) {
+            const container = document.getElementById('categoryContainer');
+            container.innerHTML = '';
+            const allItems = [...stories, ...books];
+            let displayData = data || (currentView === 'video' ? stories : (currentView === 'book' ? books : allItems.filter(s => favorites.includes(s.id))));
+            
+            if (!displayData.length) {
+                document.getElementById('noResult').classList.remove('hidden');
+                return;
+            }
+            document.getElementById('noResult').classList.add('hidden');
+
+            const groups = displayData.reduce((acc, item) => {
+                if (!acc[item.cat]) acc[item.cat] = [];
+                acc[item.cat].push(item);
+                return acc;
+            }, {});
+
+            Object.keys(groups).forEach(cat => {
+                const items = groups[cat];
+                const section = document.createElement('div');
+                section.className = "category-section bg-white rounded-3xl p-4 md:p-6 shadow-sm border border-orange-50/50";
+                section.innerHTML = `
+                    <div class="flex items-center justify-between mb-4 px-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-2 h-6 bg-[#E86A33] rounded-full"></div>
+                            <h3 class="text-lg md:text-xl font-bold text-[#432C1A]">${cat}</h3>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="scrollLeftBtn(this)" class="p-2 bg-gray-50 rounded-full border border-gray-100 hover:bg-orange-50 transition-colors"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>
+                            <button onclick="scrollRightBtn(this)" class="p-2 bg-gray-50 rounded-full border border-gray-100 hover:bg-orange-50 transition-colors"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>
+                        </div>
+                    </div>
+                    <div class="flex overflow-x-auto snap-x no-scrollbar gap-4 pb-4 scroll-container">
+                        ${items.map(item => renderCard(item)).join('')}
+                    </div>
+                `;
+                container.appendChild(section);
+            });
+        }
+
+        function renderCard(item) {
+            const isFav = favorites.includes(item.id);
+            const favClass = isFav ? 'text-red-500 fill-red-500' : 'text-gray-300';
+            if (item.type === 'book') {
+                return `
+                    <div class="snap-center shrink-0 w-44 md:w-52 bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm relative flex flex-col hover-scale">
+                        <button onclick="toggleFav(event, '${item.id}')" class="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 shadow-sm"><svg class="h-4 w-4 ${favClass}" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg></button>
+                        <div class="aspect-[3/4] bg-orange-50 flex items-center justify-center"><svg class="h-12 w-12 text-orange-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.247 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg></div>
+                        <div class="p-3 flex-1 flex flex-col justify-between"><h4 class="text-xs font-bold line-clamp-2 mb-2 h-8 leading-tight text-[#432C1A]">${item.title}</h4><a href="${item.url}" target="_blank" class="block w-full py-2 text-[10px] text-center bg-orange-100 text-orange-800 font-bold rounded-lg hover:bg-orange-500 hover:text-white transition-colors">อ่านเลย</a></div>
+                    </div>`;
+            }
+            return `
+                <div class="snap-center shrink-0 w-64 md:w-72 bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm group relative hover-scale">
+                    <button onclick="toggleFav(event, '${item.id}')" class="absolute top-2 right-2 z-10 p-2 rounded-full bg-white/80 shadow-sm"><svg class="h-4 w-4 ${favClass}" viewBox="0 0 24 24" stroke="currentColor"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg></button>
+                    <div class="aspect-video cursor-pointer relative" onclick="playVideo('${item.id}')">
+                        <img src="https://img.youtube.com/vi/${item.ytId}/mqdefault.jpg" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/30 transition-colors"><div class="bg-white/90 p-2 rounded-full text-[#E86A33] shadow-lg"><svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168l4.2 2.4a1 1 0 010 1.732l-4.2 2.4A1 1 0 018 12.832V7.168a1 1 0 011.555-.832z" /></svg></div></div>
+                    </div>
+                    <div class="p-3"><h4 class="text-xs md:text-sm font-bold line-clamp-1 text-[#432C1A]">${item.title}</h4></div>
+                </div>`;
+        }
+
+        function changeView(view) {
+            currentView = view;
+            const titles = { video: 'วิดีโอนิทานชาดก', book: 'ห้องสมุดชาดก', fav: 'รายการโปรดของฉัน' };
+            const subtitles = { video: 'เลือกรับชมเรื่องราวคุณธรรมที่สอดแทรกคติสอนใจ', book: 'รวมหนังสือนิทานภาพและการ์ตูนสำหรับอ่าน', fav: 'เรื่องราวที่คุณชื่นชอบและบันทึกเก็บไว้' };
+            
+            document.getElementById('viewTitle').innerText = titles[view];
+            document.getElementById('viewSubtitle').innerText = subtitles[view];
+            
+            ['video', 'book', 'fav'].forEach(v => {
+                const sideBtn = document.getElementById(`side-${v}`);
+                const navBtn = document.getElementById(`nav-${v}`);
+                if (navBtn) {
+                    const navIconBg = navBtn.querySelector('.nav-icon-bg');
+                    if (v === view) {
+                        navBtn.classList.add('text-app-primary');
+                        navBtn.classList.remove('text-gray-400');
+                        navIconBg?.classList.add('bg-orange-100');
+                    } else {
+                        navBtn.classList.remove('text-app-primary');
+                        navBtn.classList.add('text-gray-400');
+                        navIconBg?.classList.remove('bg-orange-100');
+                    }
+                }
+                
+                if (sideBtn) {
+                    const sideIconBg = sideBtn.querySelector('.side-icon-bg');
+                    const sideIcon = sideBtn.querySelector('.side-icon');
+                    if (v === view) {
+                        sideBtn.classList.add('bg-orange-100', 'text-orange-800', 'font-semibold');
+                        sideBtn.classList.remove('text-gray-600', 'font-medium');
+                        sideIconBg?.classList.add('bg-white', 'shadow-sm');
+                        sideIcon?.classList.add('text-orange-600');
+                    } else {
+                        sideBtn.classList.remove('bg-orange-100', 'text-orange-800', 'font-semibold');
+                        sideBtn.classList.add('text-gray-600', 'font-medium');
+                        sideIconBg?.classList.remove('bg-white', 'shadow-sm');
+                        sideIcon?.classList.remove('text-orange-600');
+                    }
+                }
+            });
+
+            renderContent();
+            if (window.innerWidth < 768) toggleSidebar(true);
+        }
+
+        function toggleSidebar(forceClose = false) {
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('sidebarOverlay');
+            if (forceClose) {
+                sb.classList.replace('sidebar-open', 'sidebar-closed');
+                ov.classList.add('hidden');
             } else {
-                // ไม่ใช่ YouTube (เช่น Google Drive)
-                ytContainer.classList.add('hidden');
-                if (ytPlayer && typeof ytPlayer.stopVideo === 'function') {
-                    ytPlayer.stopVideo();
-                }
-                
-                normalIframe.classList.remove('hidden');
-                normalIframe.src = story.fullStoryUrl;
-                
-                // สำหรับ iframe ธรรมดา เราดักจับตอนจบไม่ได้ ให้ซ่อน loader ไปเลย
-                setTimeout(() => { videoLoader.style.display = 'none'; }, 1000);
-            }
-
-            videoModal.classList.remove('hidden');
-            videoModal.classList.add('flex');
-            document.body.style.overflow = 'hidden'; 
-        }
-
-        // จับเหตุการณ์ YouTube
-        function onPlayerStateChange(event) {
-            // เมื่อเล่นวิดีโอจบ (State: 0 หรือ YT.PlayerState.ENDED)
-            if (event.data === 0) {
-                playNextStory();
-            }
-            // เมื่อเริ่มเล่น (ซ่อน Loader เพื่อความชัวร์)
-            if (event.data === 1) {
-                document.getElementById('videoLoader').style.display = 'none';
+                sb.classList.toggle('sidebar-closed');
+                sb.classList.toggle('sidebar-open');
+                ov.classList.toggle('hidden');
             }
         }
 
-        function playNextStory() {
-            // ดัน index ไปเรื่องถัดไป
-            let nextIndex = currentPlayingStoryIndex + 1;
-            
-            // วนลูปหาเรื่องถัดไปที่มี URL (ข้ามเรื่องที่ลิงก์เสียหรือเป็น #)
-            while (nextIndex < stories.length) {
-                const nextStory = stories[nextIndex];
-                if (nextStory.fullStoryUrl && nextStory.fullStoryUrl !== '#' && nextStory.fullStoryUrl.trim() !== '') {
-                    openVideoModal(nextIndex);
-                    return; // เจอเรื่องและสั่งเล่นแล้ว ออกจากลูป
-                }
-                nextIndex++;
-            }
-            
-            // ถ้าหมดคิวแล้ว (จบเรื่องสุดท้าย)
-            closeVideoModal();
+        function toggleFav(e, id) {
+            e.stopPropagation();
+            const idx = favorites.indexOf(id);
+            if (idx > -1) favorites.splice(idx, 1);
+            else favorites.push(id);
+            localStorage.setItem('jataka_favs_v2', JSON.stringify(favorites));
+            renderContent();
         }
 
-        function closeVideoModal() {
-            const videoModal = document.getElementById('videoModal');
-            
-            // หยุดเล่นวิดีโอ
-            if (ytPlayer && typeof ytPlayer.stopVideo === 'function') {
-                ytPlayer.stopVideo();
-            }
-            document.getElementById('normalIframe').src = ''; 
-            
-            currentPlayingStoryIndex = -1;
-            videoModal.classList.add('hidden');
-            videoModal.classList.remove('flex');
-            document.body.style.overflow = 'auto'; 
+        function handleSearch(v) {
+            const q = v.toLowerCase().trim();
+            const all = [...stories, ...books];
+            const src = currentView === 'book' ? books : (currentView === 'video' ? stories : all.filter(s => favorites.includes(s.id)));
+            renderContent(src.filter(s => s.title.toLowerCase().includes(q) || s.cat.toLowerCase().includes(q)));
         }
 
-        function closeVideoModalOnOutside(event) {
-            // ป้องกันการปิดถ้ากดโดนตัววิดีโอ
-            if (event.target === document.getElementById('videoModal')) {
-                closeVideoModal();
-            }
+        function scrollLeftBtn(b) { b.closest('.category-section').querySelector('.scroll-container').scrollBy({ left: -300, behavior: 'smooth' }); }
+        function scrollRightBtn(b) { b.closest('.category-section').querySelector('.scroll-container').scrollBy({ left: 300, behavior: 'smooth' }); }
+
+        function onYouTubeIframeAPIReady() {}
+        function playVideo(id) {
+            currentIndex = stories.findIndex(s => s.id === id);
+            const s = stories[currentIndex];
+            if (!s) return;
+            document.getElementById('videoModal').classList.replace('hidden', 'flex');
+            document.getElementById('playerTitle').innerText = s.title;
+            if (!ytPlayer) ytPlayer = new YT.Player('player', { videoId: s.ytId, playerVars: { autoplay: 1, playsinline: 1, modestbranding: 1 }, events: { onStateChange: e => e.data === 0 && playNext() } });
+            else ytPlayer.loadVideoById(s.ytId);
         }
+        function playNext() { currentIndex++; if (currentIndex >= stories.length) currentIndex = 0; playVideo(stories[currentIndex].id); }
+        function closeVideoModal() { document.getElementById('videoModal').classList.replace('flex', 'hidden'); ytPlayer?.stopVideo(); document.body.style.overflow = 'auto'; }
 
-        // Initialize หน้าแรก
-        renderStories(); 
-
+        window.onload = initData;
     </script>
 </body>
 </html>
